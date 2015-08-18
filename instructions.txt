@@ -1,0 +1,1578 @@
+Shell Programming in 24 Hours.pdf
+(((((((((((((((((((((((((((((((((
+)))))))))))))))))))))))))))))))))
+
+
+What is the Shell?
+******************
+******************
+$ date
+The computer executes the date command and displays the result.
+But how does the computer know that you wanted to run the command date?
+
+The computer uses a special program called the shell to figure this out. The shell provides you with an interface to the UNIX system. It gathers input from you and executes programs based on that input.
+
+When a program finishes executing, it displays that program's output.
+For this reason, the shell is often referred to as the UNIX system's command interpreter. For users familiar with Windows, the UNIX shell is similar to the DOS shell, COMMAND.COM.
+
+The real power of the UNIX shell lies in the fact that it is much more than a command interpreter. It is also a powerful programming language, complete with conditional statements, loops, and functions.
+
+The Shell prompt
+****************
+****************
+The prompt, $, which was discussed in the beginning of this chapter, is issued by the shell. While the prompt is displayed, you can type a command. The shell reads your input after you press Enter. It determines the command you want executed by looking at the first word of your input. A word is an unbroken set of characters. Spaces and tabs separate words.
+
+To the shell, your input looks like the following:
+	$ word1 word2 word3 ... wordN
+
+The shell always picks word1 as the name of the command you want executed. If there is only one word
+
+	$ date 
+
+the shell's job is easy. It executes the command. If there are more words
+
+	$ who am i
+
+the shell passes the extra words as arguments to the command specified by word1.
+
+
+Different types of Shells
+*************************
+
+You might notice that your prompt looks slightly different than the $ prompt I am using. The actual prompt that is displayed depends on the type of shell you are using.
+
+In UNIX there are two major types of shells:
+	The Bourne type shell
+	The C type shell
+
+If you are using a Bourne-type shell, the default prompt is the $ character. If you are using a C-type shell, the default prompt is the % character. This book covers only Bourne-type shells because the C-type shells are not powerful enough for shell programming.
+
+Note - In UNIX there are two types of accounts, regular user accounts and the root account. Normal users are given regular user accounts. 
+
+The root account is an account with special privileges the administrator of a UNIX system (called the sysadmin) uses to perform maintenance and upgrades. If you are using the root account, both the Bourne and C shells display the # character as a prompt. Be extremely careful when executing commands as the root user because your commands effect the whole system.
+
+The different Bourne-type shells follow:
+	Bourne shell ( sh)
+	Korn shell ( ksh)
+	Bourne Again shell ( bash)
+	POSIX shell ( sh)
+The different C-type shells follow:
+	C shell ( csh)
+	TENEX/TOPS C shell ( tcsh)
+
+Unless explicitly noted, the examples and exercise answers in this book will work with any Bourne-type shell.
+
+Command to see the current shell:
+----------------------------------
+
+	[prabhu@localhost Unix_shellscripting]$ echo $SHELL
+	/bin/bash
+
+Command to see the process id of the current shell:
+---------------------------------------------------
+The $$ variable is the PID (Process IDentifier) of the currently running shell. This can be useful for creating temporary files, such as /tmp/my-script.$$ which is useful if many instances of the script could be run at the same time, and they all need their own temporary files. 
+
+	sh-4.2$ echo $$
+	3136
+
+The $! variable is the PID of the last run background process. This is useful to keep track of the process as it gets on with its job.
+
+
+The Bourne Again Shell (Bash):
+-----------------------------
+The Bourne Again shell, bash, was developed as part of the GNU project and has replaced the Bourne shell, sh, for GNU-based systems like Linux. All major Linux distributions, including Red Hat, Slackware, and Caldera, ship with bash as their sh replacement.
+
+Although it includes C shell ( csh and tcsh) and Korn shell ( ksh) features, bash retains syntax compatibility with the Bourne shell, enabling it to run almost all Bourne shell scripts. bash was written by Brian Fox ( bfox@gnu.ai.mit.edu) of the Free Software Foundation and is
+currently maintained by Chester Ramey ( chet@ins.cwru.edu) of Case Western Reserve University
+
+It is installed as /bin/bash.
+
+Some features that bash includes in addition to those of the Korn shell are:
+	Name completion for variable names, usernames, host names, commands, and filenames
+	Spelling correction for pathnames in the cd command
+	Arrays of unlimited size
+	Integer arithmetic in any base between 2 and 64
+
+
+The UNIX System
+***************
+***************
+
+The UNIX system consists of two components:
+	1) Utilities
+	2) The kernel
+
+1) Utilities
+Utilities are programs you can run or execute. The programs who and date that you saw in the previous chapter are examples of utilities. Almost every program that you know is considered a utility.
+
+Commands are slightly different than utilities. The term utility refers to the name of a program, whereas the term command refers to the program and any arguments you specify to that program to change its behavior. You might see the term command used instead of the term utility for simple commands, where only the program name to execute is given.
+
+The kernel is the heart of the UNIX system. It provides utilities with a means of accessing a machine's hardware. It also handles the scheduling and execution of commands. 
+
+When a machine is turned off, both the kernel and the utilities are stored on the machine's hard disks. But when the computer is booted, the kernel is loaded from disk into memory. The kernel remains in memory until the machine is turned off.
+
+Utilities, on the other hand, are stored on disk and loaded into memory only when they are executed. For example, when you execute the command.
+
+	$ who
+
+The kernel loads the who command from the machine's hard disk, places it in memory, and executes it. When the program finishes executing, it remains in the machine's memory for a short period of time before it is removed. This enables frequently used commands to execute faster. 
+
+Consider what happens when you execute the date command three times:
+
+	$ date
+	Sun Dec 27 09:42:37 PST 1998
+
+	$ date
+	Sun Dec 27 09:42:38 PST 1998
+
+	$ date
+	Sun Dec 27 09:42:39 PST 1998
+
+The first time the date command can be loaded from the machine's hard disk, but the second and third time the date command usually remains in the machine's memory allowing it to execute faster.The shell is a program similar to the who command. The main difference is that the shell is loaded into memory when you log in.
+
+
+Shell initialization:
+********************
+********************
+
+When the login program executes a shell, that shell is uninitialized. When a shell is uninitialized, important
+parameters required by the shell to function correctly are not defined.
+The shell undergoes a phase called initialization to set up these parameters. This is usually a two step
+process that involves the shell reading the following files:
+	/etc/profile
+	profile
+
+The process is as follows:
+	1. The shell checks to see whether the file /etc/profile exists.
+	2. If it exists, the shell reads it. Otherwise, this file is skipped. No error message is displayed.
+	3. The shell checks to see whether the file .profile exists in your home directory. Your home
+	directory is the directory that you start out in after you log in.
+	4. If it exists, the shell reads it; otherwise, the shell skips it. No error message is displayed.
+
+As soon as both of these files have been read, the shell displays a prompt:
+	$
+
+This is the prompt where you can enter commands in order to have them execute.
+
+Note - The shell initialization process detailed here applies to all Bourne type shells, but some additional files are used by bash and ksh. You can obtain more information about this process for a particular shell using the man command explained later in this chapter.
+
+	man sh
+	man bash
+	(There you can find information about syntax of for loops, case etc)
+
+Interactive Versus Non Interactive Shells
+*****************************************
+*****************************************
+
+1) Interactive mode
+
+When the shell displays a prompt for you, it is running in interactive mode.Interactive mode means that the shell expects to read input from you and execute the commands that you specify. This mode is called interactive because the shell is interacting with a user. This is usually
+the mode of the shell that most users are familiar with: you log in, execute some commands, and log out. When you log out using the exit command, the shell exits.
+
+2) Non-Interactive mode
+
+The shell can be run in another mode, called noninteractive mode . In this mode, the shell does not interact with you; instead it reads commands stored in a file and executes them. When it reaches the end of the file, the shell exits.
+
+How login starts a shell
+------------------------
+
+When the login program starts a shell, it basically executes the following command:
+	/bin/sh
+
+By issuing this command, it puts the shell into interactive mode. You can start a shell in interactive mode by issuing the same command at the prompt:
+	$ /bin/sh
+	$
+
+The first prompt $ is displayed by the shell that login started; the second one is displayed by the shell you started. To exit from this shell, use the exit command:
+	$ exit
+	$
+
+The prompt that is displayed now is from the original shell started by login. Typing exit at this prompt logs you out.
+
+How to start the shell Noninteractively
+---------------------------------------
+You can start the shell noninteractively as follows:
+	$ /bin/sh filename
+
+Here filename is the name of a file that contains commands to execute. As an example, consider the compound command:
+	$ date ; who
+
+Put these commands into a file called logins. First open a file called logins in an editor and type the command shown previously. Assuming that the file is located in the current directory, after the file is saved, the command can run as:
+	$ /bin/sh logins
+
+This executes the compound command and displays its output. This is the first example of a shell script . Basically, a shell script is a list of commands stored in a file that the shell executes noninteractively.
+
+
+Initialization file contents
+----------------------------
+
+Usually the shell initialization files are quite short. They are designed to provide a complete working environment with as little overhead as possible for both interactive and noninteractive shells.
+
+The file /etc/profile is maintained by the system administrator of your UNIX machine and contains shell initialization information required by all users on a system.
+
+The file .profile is under your control. You can add as much shell customization information as you want to this file. The minimum set of information that you need to configure includes:
+
+	The type of terminal you are using
+	A list of directories in which to locate commands
+	A list of directories in which to locate manual pages for commands
+
+Setting the PATH:
+-----------------
+
+When you type the command
+	$ date
+the shell has to locate the command date before it can be executed. The PATH specifies the locations in which the shell should look for commands.Usually it is set as follows:
+
+	PATH=/bin:/usr/bin
+
+Each of the individual entries separated by the colon character, :, are directories.
+
+If you request the shell to execute a command and it cannot find it in any of the directories given in the PATH variable, a message similar to the following appears:
+	$ hello
+	hello: not found
+
+
+Making a Shell Script executable:
+--------------------------------
+One of the most important tasks in writing shell scripts is making the shell script executable and making sure that the correct shell is invoked on the script. In a previous example, you created the logins script that executes the following compound command:
+	date ; who ;
+
+If you wanted to run the script by typing its name, you need to do two things:
+	Make it executable.
+	Make sure that the right shell is used when the script is run.
+
+To make this script executable, do the following:
+	chmod a+x ./logins
+
+To ensure that the correct shell is used to run the script, you must add the following "magic" line to the
+beginning of the script:
+	#!/bin/sh
+
+Your script then has two lines:
+	#/bin/sh
+	date ; who ;
+
+The magic line causes a new shell (in this case, /bin/sh) to be called to execute the script. Without the magic line, the current shell is always used to evaluate the script, regardless of which shell the script was written for. For example, without a magic line, csh and tcsh users might not be able to get a Bourne shell (sh) script to run correctly.
+
+The Magic of #!/bin/sh
+The #!/bin/sh must be the first line of a shell script in order for sh to be used to run the script. If this appears on any other line, it is treated as a comment and ignored by all shells.
+
+Comments
+********
+********
+The magic first line #!/bin/sh introduces the topic of comments. A comment is a statement that is embedded in a shell script but should not be executed by the shell. In shell scripts, comments start with the # character. Everything between the # and end of the line are
+considered part of the comment and are ignored by the shell.
+
+Adding comments to a script is quite simple: Open the script using an editor and add lines that start with the # character. For example: 
+	#!/bin/sh
+	# print out the date and who's logged on
+	date ; who ;
+
+You can also add comments to lines that contain commands by adding the # character after the commands. For example, you can add a comment to the line date ; who ; as follows:
+
+	date ; who ; # execute the date and who commands
+
+When you are writing a shell script, make sure to use comments to explain what you are doing in case someone else has to look at your shell script. You might find that this helps you figure out what your own scripts are doing, months after you write them.
+
+Completed Hour 2: Script Basics
+
+Start with Hour 3: Working with Files in "Shell Programming in 24 Hours.pdf"
+****************************************************************************************************
+****************************************************************************************************
+
+
+Book -> abs-guide.pdf
+(((((((((((((((((((((
+)))))))))))))))))))))
+
+Chapter 2: Starting Off With a Sha-Bang
+***************************************
+***************************************
+The sha-bang ( #!) at the head of a script tells your system that this file is a set of commands to be fed to the command interpreter 
+indicated. 
+
+	#!/bin/sh
+	#!/bin/bash
+	#!/usr/bin/perl
+	#!/usr/bin/tcl
+	#!/bin/sed -f
+	#!/bin/awk -f
+
+
+Example to find if an user is root user or not:
+----------------------------------------------
+	#!/bin/bash
+	ROOT_UID=0     # Only users with $UID 0 have root privileges
+	E_NOTROOT=87   # Non-root exit error
+
+	if [ "$UID" -ne "$ROOT_UID" ]
+	then
+	  echo "Must be a root to run this script"
+	  exit 
+
+Example with command line arguments:
+-----------------------------------
+	#!/bin/bash
+
+	#Prints the name of the program
+	#basename prints only the filename without ./
+	filename=`basename $0`
+	echo "Name of the program - $0"
+	echo "filename is $filename"
+
+	SCRIPT_PATH=`readlink -f $0`
+	SCRIPT_DIR=`dirname $SCRIPT_PATH`
+	echo "SCRIPT_PATH=$SCRIPT_PATH"
+	echo "SCRIPT_DIR=$SCRIPT_DIR"
+
+	# $# contains the number of items on the command line in addition to the name of the command ($0).
+	echo "Number of command line arguments - $#"
+
+	# $@ contains all the command line argument values excluding the program name.
+	# It doesn't preserve any whitespace. quoting, so "File with spaces" becomes "File" "with" "spaces". 
+	echo "All the command line arguments -> $@"
+
+	# $1 .. $9 are the first 9 additional parameters the script was called with. 
+
+	if [ "$1" != "" ]
+	then
+	  echo "First command line argument is $1"
+	else
+	  echo "First command line argument is not present"
+	fi
+
+	if [ "$2" != "" ]
+	then
+	  echo "Second command line argument is $2"
+	else
+	  echo "Second command line argument is not present"
+	fi
+
+Output:
+
+	[prabhu@localhost learn_shellscripting]$ ./command_line_arguments.sh   first second
+	Name of the program - ./command_line_arguments.sh
+	filename is command_line_arguments.sh
+	SCRIPT-PATH=/home/prabhu/Dropbox/learn_shellscripting/command_line_arguments.sh
+	SCRIPT_DIR=/home/prabhu/Dropbox/learn_shellscripting
+	Number of command line arguments - 2
+	All the command line arguments -> first second
+	First command line argument is first
+	Second command line argument is second
+
+	[prabhu@localhost learn_shellscripting]$ ./command_line_arguments.sh   first
+	Name of the program - ./command_line_arguments.sh
+	filename is command_line_arguments.sh
+	SCRIPT-PATH=/home/prabhu/Dropbox/learn_shellscripting/command_line_arguments.sh
+	SCRIPT_DIR=/home/prabhu/Dropbox/learn_shellscripting
+	Number of command line arguments - 1
+	All the command line arguments -> first
+	First command line argument is first
+	Second command line argument is not present
+
+
+Example 2:
+A shift statement is typically used when the number of arguments to a command is not known in advance, for instance when users can give as many arguments as they like. In such cases, the arguments are usually processed in a while loop.
+
+The command line arguments will be in a list(for example).
+When we give shift, it will remove the current item from the list and move to the next item.
+$1 is all you need. By the time you do the "shift" you should be finished with $1 and you don't care that it's going away. 
+This script keeps on using shift until $# is down to zero, at which point the list is empty.
+
+shift 2 - Removes 2 items and goes to the next from the list.
+
+	#!/bin/bash
+
+	# $@ gives all command line arguments values(excluding program name). But it will not preserve spacing.
+	# We can get the value of command line arguments through $1 to $9. We can't get the value from $10.
+	# We can get that with shift.
+
+	while [ "$#" -gt "0" ]
+	do
+	   echo "argument value is $1"
+	   shift
+	done
+
+Output:
+sh-4.2$ ./command_line_arguments_2.sh 12 14 354 34 34 343 34 34 3434 34343 3434 3434 3434 3434 34
+	argument value is 12
+	argument value is 14
+	argument value is 354
+	argument value is 34
+	argument value is 34
+	argument value is 343
+	argument value is 34
+	argument value is 34
+	argument value is 3434
+	argument value is 34343
+	argument value is 3434
+	argument value is 3434
+	argument value is 3434
+	argument value is 3434
+	argument value is 34
+
+Invoking the script
+*******************
+*******************
+
+Having written the script, you can invoke it by sh scriptname, or alternatively bash scriptname. Much more convenient is to make the script itself directly executable with a chmod.
+Either:
+	chmod 555 scriptname (gives everyone read/execute permission) [14]
+or
+	chmod +rx scriptname (gives everyone read/execute permission)
+	chmod u+rx scriptname (gives only the script owner read/execute permission)
+
+Having made the script executable, you may now test it by ./scriptname.
+
+
+Chapter 6 : Exit and Exit Status
+*********************************
+*********************************
+
+To see the exit code of last run command:
+	echo $?
+
+Every command returns an exit status (sometimes referred to as a return status or exit code). A successful command returns a 0, while an unsuccessful one returns a non-zero value that usually can be interpreted as an error code. Well-behaved UNIX commands, programs, and utilities return a 0 exit code upon successful completion, though there are some exceptions.
+
+	exit nnn
+	exit 100
+
+Likewise, functions within a script and the script itself return an exit status. The last command executed in the
+function or script determines the exit status. Within a script, an exit nnn command may be used to deliver
+an nnn exit status to the shell (nnn must be an integer in the 0 - 255 range).
+
+When a script ends with an exit that has no parameter, the exit status of the script is the exit status of the last command executed in the script (previous to the exit).
+
+
+Steve Parker book:
+http://steve-parker.org/sh/sh.shtml
+(((((((((((((((((
+)))))))))))))))))
+
+Chapter 4-Variables
+http://steve-parker.org/sh/variables1.shtml
+---------
+The shell does not care about types of variables; they may store strings, integers, real numbers - anything you like. 
+
+	MY_MESSAGE="Hello World"
+	MY_SHORT_MESSAGE=hi
+	MY_NUMBER=1
+	MY_PI=3.142
+	MY_OTHER_PI="3.142"
+	MY_MIXED=123abc
+
+Note that we need the quotes around the string Hello World. Whereas we could get away with echo Hello World because echo will take any number of parameters, a variable can only hold one value, so a string with spaces must be quoted to that the shell knows to treat it all as one. Otherwise, the shell will try to execute the command World after assigning MY_MESSAGE=Hello
+
+	$ x="hello"
+	$ expr $x + 1
+	expr: non-numeric argument
+	$
+This is because the external program expr only expects numbers. 
+
+expr
+----
+	c=`expr $a + $b`
+	echo $c
+
+read
+-----
+We can interactively set variable names using the read command; the following script asks you for your name then greets you personally:
+
+	echo "What is your name?"
+	read name
+	echo "Welcome $name"
+
+Scope of variables
+-------------------
+Variables in the Bourne shell do not have to be declared, as they do in languages like C. But if you try to read an undeclared variable, the result is the empty string. You get no warnings or errors. This can cause some subtle bugs
+
+	#!/bin/sh
+	echo "MYVAR is: $MYVAR"
+	MYVAR="hi there"
+	echo "MYVAR is: $MYVAR"
+
+	Now run the script:
+
+	$ ./myvar2.sh
+	MYVAR is:
+	MYVAR is: hi there
+
+To run the commands from interactive shell, type:
+	sh
+
+variable_scope.sh
+
+	#! /bin/bash
+
+	echo "vehicle name is $vehicle"
+	vehicle="ship"
+	echo "vehicle name is $vehicle"
+
+Run the below commands in interactive shell:
+
+	sh-4.2$ vehicle="car"
+	sh-4.2$ ./variable_scope.sh 
+	vehicle name is 
+	vehicle name is ship
+	sh-4.2$ 
+
+It's still not been set! What's going on?! 
+When you call variable_scope.sh from your interactive shell, a new shell is spawned to run the script. 
+This is partly because of the #!/bin/sh line at the start of the script, which we discussed earlier. 
+We need to export the variable for it to be inherited by another program - including a shell script.
+The exported values can be used by child processes/sub shells.
+
+	sh-4.2$ vehicle="car"
+	sh-4.2$ export vehicle
+	sh-4.2$ ./variable_scope.sh 
+	vehicle name is car
+	vehicle name is ship
+	sh-4.2$ 
+
+The script is changing the value of vehicle to "ship". But there is no way that this will be passed back to your interactive shell. 
+Try reading the value of vehicle:
+
+	sh-4.2$ echo $vehicle
+	car
+
+Once the shell script exits, its environment is destroyed. But vehicle keeps its value of car within your interactive shell. In order to receive environment changes back from the script, we must source the script - this effectively runs the script within our own interactive shell, instead of spawning another shell to run it. We can source a script via the "." (dot) command:
+
+	sh-4.2$ vehicle="car"
+	sh-4.2$ export vehicle
+	sh-4.2$ . ./variable_scope.sh 
+	vehicle name is car
+	vehicle name is ship
+
+Now try reading the value of vehicle. It displays the value set inside the script!
+
+	sh-4.2$ echo $vehicle
+	ship
+
+The change has now made it out into our shell again! This is how your .profile or .bash_profile file works, for example.
+Note that in this case, we don't need to export MYVAR. 
+
+
+Suffixing variables
+-------------------
+
+Example:
+-------
+The shell does not know where the variable ends and the rest starts. How can we define this?  The answer is, that we enclose the variable itself in curly brackets:
+
+
+	#! /bin/bash
+
+	USER_NAME="BALU"
+
+	echo "Hello $USER_NAME"
+	echo "I will create you a file called ${USER_NAME}_file.txt"
+
+	touch "${USER_NAME}_file.txt"
+
+
+The shell now knows that we are referring to the variable USER_NAME and that we want it suffixed with "_file.txt". This can be the downfall of many a new shell script programmer, as the source of the problem can be difficult to track down.
+
+Also note the quotes around "${USER_NAME}_file" - if the user entered "Steve Parker" (note the space) then without the quotes, the arguments passed to touch would be Steve and Parker_file - that is, we'd effectively be saying touch Steve Parker_file, which is two files to be touched, not one. The quotes avoid this. 
+
+
+Useful operators here:
+http://www.freeos.com/guides/lsst/ch03sec02.html
+
+
+Chapter 6: Escape Characters
+****************************
+****************************
+Certain characters are significant to the shell; we have seen, for example, that the use of double quotes (") characters affect how spaces and TAB characters are treated, for example:
+
+	sh-4.2$ echo "Hello world"
+	Hello world
+
+	sh-4.2$ echo "Hello             world"
+	Hello             world
+
+So how do we display: Hello    "World" ?
+
+	sh-4.2$ echo "Hello             \"world\""
+	Hello             "world"
+
+In the below, note that we lose the quotes entirely. This is because the first and second quotes mark off the Hello and following spaces; the second argument is an unquoted "World" and the third argument is the empty string; "".
+
+	sh-4.2$ echo "Hello     "world""
+	Hello     world
+
+
+Most characters (*, ', etc) are not interpreted (ie, they are taken literally) by means of placing them in double quotes (""). They are taken as is and passed on to the command being called. An example using the asterisk (*) goes:
+
+	sh-4.2$ echo *
+	command_line_arguments.sh instructions.txt root_or_not.sh variable_concatenation.sh variable_scope.sh variables.sh
+
+	sh-4.2$ echo "*"
+	*
+
+	sh-4.2$ echo *txt
+	instructions.txt
+
+	sh-4.2$ echo "*.txt"
+	*.txt
+
+
+However, ", $, `, and \ are still interpreted by the shell, even when they're in double quotes. 
+The backslash (\) character is used to mark these special characters so that they are not interpreted by the shell, but passed on to the command beingrun (for example, echo).
+
+	sh-4.2$ echo "A quote is \" A backslash is \\ A backtrick is \` A dollar is \$"
+	A quote is " A backslash is \ A backtrick is ` A dollar is $
+
+We have seen why the " is special for preserving spacing. Dollar ($) is special because it marks a variable, so $X is replaced by the shell with the contents of the variable X. Backslash (\) is special because it is itself used to mark other characters off; 
+The other special character, the backtick, is discussed later in Chapter 12, External Programs.
+
+Chapter 7: Loops
+****************
+****************
+
+For loops:
+----------
+	#!/bin/bash
+
+	for i in 1 2 3 4 5
+	do
+	  echo $i
+	done
+
+Output:
+
+	sh-4.2$ ./for.sh 
+	1
+	2
+	3
+	4
+	5
+
+For loops with wildcard characters:
+-----------------------------------
+
+	for i in *
+	do
+	  echo "Looping. Current item is $i"
+	done
+
+Output:
+
+	Looping. Current item is command_line_arguments.sh
+	Looping. Current item is for.sh
+	Looping. Current item is instructions.txt
+	Looping. Current item is root_or_not.sh
+	Looping. Current item is variable_concatenation.sh
+	Looping. Current item is variable_scope.sh
+	Looping. Current item is variables.sh
+
+
+While loops
+-----------
+	#!/bin/bash
+
+	INPUT_STRING="hello"
+	while [ $INPUT_STRING != "bye" ]
+	do
+	  echo "Type something, bye to quit"
+	  read INPUT_STRING
+	  echo "you typed $INPUT_STRING"
+	done
+
+Output:
+	sh-4.2$ ./while.sh 
+	Type something, bye to quit
+	hello
+	you typed hello
+	Type something, bye to quit
+	bye
+	you typed bye
+
+Unending while loop:
+--------------------
+The colon (:) always evaluates to true;
+
+	while :
+	do
+	  echo "This is an unending loop. Ctrl+c to end"
+	done
+
+Output:
+	This is an unending loop. Ctrl+d to end
+	This is an unending loop. Ctrl+d to end
+	This is an unending loop. Ctrl+d to end
+        ....
+        ....
+
+An handy Bash script:
+---------------------
+
+	sh-4.2$ mkdir directory{1,2,3,4}.d
+	sh-4.2$ ls
+	command_line_arguments.sh  directory2.d  directory4.d  instructions.txt  variable_concatenation.sh  variables.sh
+	directory1.d		   directory3.d  for.sh        root_or_not.sh	 variable_scope.sh	    while.sh
+
+	sh-4.2$ rmdir directory{1,2,3,4}.d
+	sh-4.2$ ls
+	command_line_arguments.sh  for.sh  instructions.txt  root_or_not.sh  variable_concatenation.sh	variable_scope.sh  variables.sh  while.sh
+
+
+Another nice example using {}:
+
+	sh-4.2$ ls -ltr {CV,jobs}
+	jobs:
+	total 20
+	-rw-rw-r--. 1 prabhu prabhu 16157 May  4 22:24 job website details.xlsx
+
+	CV:
+	total 3784
+	-rw-rw-r--. 1 prabhu prabhu   34296 Mar 23  2011 Thangabalu_Engelska CV.docx
+	-rw-rw-r--. 1 prabhu prabhu     972 Mar 23  2011 email body.txt
+	-rw-rw-r--. 1 prabhu prabhu     244 Mar 23  2011 words learned and new skills to be added to cv on 23rd march.txt
+	-rw-rw-r--. 1 prabhu prabhu 2262016 Mar 24  2011 Thangabalu.doc
+
+
+Chapter 8: Test
+***************
+***************
+Test is used by virtually every shell script written. It may not seem that way, because test is not often called directly. Test is more frequently called as [. 
+
+[ is a symbolic link to test, just to make shell programs more readable. If is also normally a shell builtin (which means that the shell itself will interpret [ as meaning test, even if your Unix environment is set up differently):
+
+	sh-4.2$ type [
+	[ is a shell builtin
+
+	sh-4.2$ which [
+	/usr/bin/[
+
+	sh-4.2$ ls -l /usr/bin/[
+	-rwxr-xr-x. 1 root root 42572 Jan 20  2014 /usr/bin/[
+
+This means that '[' is actually a program, just like ls and other programs, so it must be surrounded by spaces:
+
+Put spaces around all your operators. I've highlighted the mandatory spaces with the word 'SPACE' - replace 'SPACE' with an actual space; if there isn't a space there, it won't work:
+
+	if SPACE [ SPACE "$foo" SPACE = SPACE "bar" SPACE ]
+
+	if [ $name = "hello" ]
+
+Note: Some shells also accept "==" for string comparison; this is not portable, a single "=" should be used for strings, or "-eq" for integers.
+Test is a simple but powerful comparison utility. For full details, run man test on your system.
+
+you will come into difficulties if you create a program called test and try to run it, as this shell builtin will be called instead of your program! 
+
+The syntax for if...then...else... is:
+
+	if [ ... ]
+	then
+	  # if-code
+	else
+	  # else-code
+	fi
+
+Note that fi is if backwards! This is used again later with case and esac.
+Also, be aware of the syntax - the "if [ ... ]" and the "then" commands must be on different lines. Alternatively, the semicolon ";" can separate them:
+
+	if [ ... ]; then
+	  # do something
+	fi
+
+You can also use the elif, like this:
+
+	if  [ something ]; then
+	 echo "Something"
+	 elif [ something_else ]; then
+	   echo "Something else"
+	 else
+	   echo "None of the above"
+	fi
+
+This will echo "Something" if the [ something ] test succeeds, otherwise it will test [ something_else ], and echo "Something else" if that succeeds. If all else fails, it will echo "None of the above".
+
+Writing test([]) in different ways:
+Always quote your variables when performing comparisons if there is the slightest chance that one of them may be empty.
+
+	#!/bin/bash
+
+	name="balu"
+
+	if [ "$name" = "balu" ]
+	then
+	  echo "name is balu"
+	else
+	  echo "name is not balu"
+	fi
+
+	# ; is used to combine two lines
+
+	if [ $name = "balu" ]; then
+	  echo "name is balu"
+	else
+	  echo "name is not balu"
+	fi
+
+	# && and || replaces if, then and else keywords
+
+	[ $name = "balu" ] && echo "name is balu" || echo "name is not balu"
+
+	# The backslash simply tells the shell that this is not the end of the line, but the two (or more) lines should be treated as one. This is useful for readability. It is customary to indent the following line.
+
+	[ $name = "balu" ] \
+	   && echo "name is balu" \
+	   || echo "name is not balu"
+
+Different operators:
+-------------------
+Export the value of X before running the script:
+
+	#!/bin/bash
+
+	[ $X -lt 0 ] && echo "X is lesser than zero"
+
+	[ $X -gt 0 ] && echo "X is greater than zero"
+
+	[ $X -le 0 ] && echo "X is lesser than or equal to zero"
+
+	[ $X -ge 0 ] && echo "X is greater than or equal to zero"
+
+	[ -n $X ] && echo "X is non zero length"
+
+	[ -z $X ] && echo "X is zero length"
+
+Output:
+-------
+Note that when you set X to a non-numeric value, the first few comparisons result in the message:
+
+sh-4.2$ ./different_operators.sh 
+./different_operators.sh: line 3: [: asdf: integer expression expected
+./different_operators.sh: line 5: [: asdf: integer expression expected
+./different_operators.sh: line 7: [: asdf: integer expression expected
+./different_operators.sh: line 9: [: asdf: integer expression expected
+X is non zero length
+
+
+This is because the -lt, -gt, -le and -ge comparisons are only designed for integers, and do not work on strings. The string comparisons, such as != will happily treat "5" as a string, but there is no sensible way of treating "Hello" as an integer, so the integer comparisons complain. 
+If you want your shell script to behave more gracefully, you will have to check the contents of the variable before you test it - maybe something like this:
+
+	#!/bin/bash
+
+	echo "Please write the value. This program will find if it is number or not"
+	read X
+
+	# Grep return code is 0 if it founds match
+	# 1 if no match
+	# 2 if trouble
+	echo $X | grep [^0-9] >> /dev/null 2>&1
+
+	if [ $? -eq 0 ]
+	then
+	  echo "Exit code is 0. It found a match. So, it's not a number"
+	else
+	  echo "You entered a number"
+	  if [ "$X" -eq 7 ]
+	  then
+	    echo "You entered the magic number 7"
+	  fi
+	fi
+
+^ - Finds only lines which are not 0-9. If it finds a match, then the value is not an integer.
+	fd - functional descriptor
+
+By default:
+
+        stdin  ==> fd 0
+        stdout ==> fd 1
+        stderr ==> fd 2
+
+In script, if you use > /dev/null causing:
+
+        stdin  ==> fd 0
+        stdout ==> /dev/null
+        stderr ==> fd 2
+
+If you use > /dev/null 2>&1 causing:
+It will redirect all your command output (include both stdout and stderr) to /dev/null, causing no outputs are printed to terminal.
+
+        stdin  ==> fd 0
+        stdout ==> /dev/null
+        stderr ==> stdout
+
+
+Chapter 9 - Case
+****************
+	#!/bin/bash
+
+	echo "Please talk to me"
+	while :
+	do
+	   read INPUT_STRING
+	   case $INPUT_STRING in
+	      hello)
+		 echo "Hello yourself"
+		 ;;
+	      bye)
+		 echo "Bye yourself. See you again"
+		 break
+		 ;;
+	      *) 
+		 echo "Sorry. I don't understand"
+		 ;;
+	   esac  
+	done     
+	      
+	echo "That's all folks"
+
+Output:
+-------
+	sh-4.2$ ./case.sh 
+	Please talk to me
+	hello
+	Hello yourself
+	rahul
+	Sorry. I don't understand
+	bye
+	Bye yourself. See you again
+	That's all folks
+
+
+The syntax is quite simple: 
+   The case line itself is always of the same format, and it means that we are testing the value of the variable INPUT_STRING.
+   The options we understand are then listed and followed by a right bracket, as hello) and bye). 
+   This means that if INPUT_STRING matches hello then that section of code is executed, up to the double semicolon. 
+
+   If INPUT_STRING matches bye then the goodbye message is printed and the loop exits. 
+   Note that if we wanted to exit the script completely then we would use the command exit instead of break. 
+
+   The third option here, the *), is the default catch-all condition; it is not required, but is often useful for debugging purposes even if we think we know what values the test variable will have.
+
+   The whole case statement is ended with esac (case backwards!) then we end the while loop with a done.
+
+New line with echo:
+------------------
+-e  ->  enable interpretation of backslash escapes
+
+	echo -e "You entered zero\n";;
+
+Chapter 11 - Part III
+*********************
+*********************
+Running a command and storing its value - Use backtrick symbol `
+---------------------------------------
+As with other use of the backticks, `whoami` runs in a subshell, so any cd commands, or setting any other variables, within the backticks, 
+will not affect the currently-running shell.
+
+The backtick is used to indicate that the enclosed text is to be executed as a command. 
+
+	sh-4.2$ MYNAME=`whoami`
+	sh-4.2$ echo $MYNAME
+	prabhu
+
+Unset a variable
+----------------
+Unsetting a variable removes the variable and its value.
+
+	sh-4.2$ echo $b
+	b
+	sh-4.2$ unset b
+	sh-4.2$ echo $b
+	sh-4.2$ 
+
+Curly brackets around a variable
+---------------------------------
+Curly brackets around a variable avoid confusion:
+
+	sh-4.2$ a="1"
+	sh-4.2$ echo ${a}st point
+	1st point
+
+
+Using Default values
+--------------------
+Consider the following code snippet which prompts the user for input, but accepts defaults:
+Passing the "-en" to echo tells it not to add a linebreak (for bash and csh).
+
+	#!/bin/bash
+
+	echo -n "Enter the username. [`whoami`]"
+	read MYNAME
+
+	if [ -z $MYNAME ]
+	then
+	  MYNAME=`whoami`
+	fi
+
+	echo "myname is $MYNAME"
+
+Output:
+------
+	sh-4.2$ ./variable_default_values.sh 
+	Enter the username. [prabhu]
+	myname is prabhu
+
+	sh-4.2$ ./variable_default_values.sh 
+	Enter the username. [prabhu]raghu
+	myname is raghu
+	sh-4.2$ 
+
+This could be done better using a shell variable feature. By using curly braces and the special ":-" usage, you can specify a default value to use if the variable is unset:
+
+	echo -n "Enter your name. ["prabhu"]"
+	read MYNAME
+
+	echo "your name is ${MYNAME:-"prabhu"}"
+        
+        # The below value will be null if the user is not giving input
+	echo $MYNAME
+
+Output:
+------
+a) User entering value
+
+	sh-4.2$ ./variable_default_values.sh 
+	Enter your name. [prabhu]prabhu
+	your name is prabhu
+	variable value is prabhu
+
+b) User is not entering value. During this time variable value doesn't have anything to output. 
+   It is not storing the default value in variable's name.   
+
+	sh-4.2$ ./variable_default_values.sh 
+	Enter your name. [prabhu]
+	your name is prabhu
+	variable value is
+
+To solve this problem, we go to next section.
+
+Using and Setting Default Values
+--------------------------------
+There is another syntax, ":=", which sets the variable to the default if it is undefined:
+This technique means that any subsequent access to the $MYNAME variable will always get a value, 
+either entered by the user, or "prabhu".
+
+Example:
+	# Setting default values
+	echo "Enter your name"
+	read MYNAME
+
+	echo "your name is ${MYNAME:="prabhu"}" #This will set the value to MYNAME variable, either the user entered or else default value "prabh"
+	echo $MYNAME
+
+Output:
+a) User entering value
+
+	sh-4.2$ ./variable_default_values.sh
+	Enter your name
+	god
+	your name is god
+	god
+
+b) User is not entering value
+
+	sh-4.2$ ./variable_default_values.sh
+	Enter your name
+
+	your name is prabhu
+	prabhu
+
+
+Chapter 13 - Functions
+**********************
+**********************
+Example:
+-------
+Line 4 identifies itself as a function declaration by ending in (). This is followed by {, and everything following to the matching } is taken to be the code of that function. This code is not executed until the function is called. Functions are read in, but basically ignored until they are actually called.
+
+So within that function, $1 is set to prabhu, regardless of what $1 may be set to outside of the function. 
+So if we want to refer to the "original" $1(command line argument) inside the function, we have to assign a name to it - such as: A=$1 before we call the function. Then, within the function, we can refer to $A. 
+
+	#!/bin/bash
+
+	print_details()
+	{
+	   echo "The name is: $1"
+	   echo "The age is: $2"
+	   shift 2;   #Having shifted twice, rest is now comments
+	   echo -e "Comments are: $@\n"
+	}
+
+
+	print_details prabhu 25 He is a calm guy
+	print_details god 1100 He is all
+
+
+Output:
+-------
+
+	sh-4.2$ ./functions.sh 
+	The name is: prabhu
+	The age is: 25
+	Comments are: He is a calm guy
+
+	The name is: god
+	The age is: 1100
+	Comments are: He is all
+
+Scope of variables
+******************
+******************
+
+Programmers used to other languages may be surprised at the scope rules for shell functions. Basically, there is no scoping, other than the parameters ($1, $2, $@, etc). Taking the following simple code segment:
+
+The variable NAME, however, is effectively a global variable - print_details function changed it, and that change is still effective when control returns to the main script.
+
+
+Example:
+--------
+
+	#!/bin/bash
+
+	print_details()
+	{
+	   echo "The name is: $1"
+	   NAME="god"
+	}
+
+
+	NAME="prabhu"
+	echo "Value of NAME before calling function - $NAME"
+
+	print_details $NAME
+	echo "Value of NAME after calling function - $NAME"
+
+Output:
+-------
+
+sh-4.2$ ./scope_of_variables.sh 
+Value of NAME before calling function - prabhu
+The name is: prabhu
+Value of NAME after calling function - god
+
+
+Using Libraries between Shell scripts: (sourcing)
+**************************************
+**************************************
+
+We will now briefly discuss using libraries between shell scripts. These can also be used to define common variables, as we shall see.
+
+Example:
+--------
+
+library.lib
+
+	#library.lib 
+	#Note no #!/bin/sh as this should not spawn an extra shell.                 
+
+	VARIABLE_1="hello"                                                         
+
+	function_1()                                                               
+	{
+	   echo "First argument is $1"
+	   echo "Second argument is $2"
+	}
+
+using_library.sh
+
+	#!/bin/bash
+
+	#Sourcing to use all the variables from the library.lib file
+	. ./library.lib
+	echo "variable value read from the sourced library is $VARIABLE_1"
+	function_1 prabhu relaxed
+
+Output:
+-------
+
+	sh-4.2$ ./using_library.sh 
+	variable value read from the sourced library is hello
+	First argument is prabhu
+	Second argument is relaxed
+
+
+Return codes in functions:
+**************************
+**************************
+
+	#!/bin/bash
+
+	another_function()
+	{
+	   [ "$1" = "prabhu" ] && return 1 \
+	      || echo "The entered name is accepted"
+
+	   [ "$2" -gt 29 ] && return 2 \
+	      || echo " The entered age is accepted"
+	}
+
+
+	another_function prabhu 25
+	[ "$?" -eq 1 ] && echo "this name is not accepted"
+	[ "$?" -eq 2 ] && echo "this age is not accepted"
+
+Output:
+sh-4.2$ ./return_codes_functions.sh 
+this name is not accepted
+
+
+getopts:
+********
+********
+********
+http://wiki.bash-hackers.org/howto/getopts_tutorial
+
+Terminology:
+-----------
+-----------
+
+It's useful to know what we're talking about here, so let's see… Consider the following command line:
+
+	mybackup -x -f /etc/mybackup.conf -r ./foo.txt ./bar.txt
+
+These are all positional parameters, but they can be divided into several logical groups:
+
+-x is an option (aka flag or switch). It consists of a dash (-) followed by one character.
+
+-f is also an option, but this option has an associated option argument (an argument to the option -f): /etc/mybackup.conf. The option argument is usually the argument following the option itself, but that isn't mandatory. Joining the option and option argument into a single argument -f/etc/mybackup.conf is valid.
+
+-r depends on the configuration. In this example, -r doesn't take arguments so it's a standalone option like -x.
+
+./foo.txt and ./bar.txt are remaining arguments without any associated options. These are often used as mass-arguments. For example, the filenames specified for cp(1), or arguments that don't need an option to be recognized because of the intended behavior of the program. POSIX® calls them operands.
+To give you an idea about why getopts is useful, The above command line is equivalent to:
+
+	mybackup -xrf /etc/mybackup.conf ./foo.txt ./bar.txt
+
+The option flags can be upper- and lowercase characters, or digits. It may recognize other characters, but that's not recommended (usability and maybe problems with special characters).
+
+How it works
+------------
+Since getopts sets an exit status of FALSE when there's nothing left to parse, it's easy to use in a while-loop:
+
+	while getopts ...; do
+	  ...
+	done
+
+getopts will parse options and their possible arguments. It will stop parsing on the first non-option argument (a string that doesn't begin with a hyphen (-) that isn't an argument for any option in front of it). 
+It will also stop parsing when it sees the -- (double-hyphen), which means end of options.
+
+
+Used variables:
+---------------
+OPTIND	Holds the index to the next argument to be processed. This is how getopts "remembers" its own status between invocations. Also useful to shift the positional parameters after processing with getopts. OPTIND is initially set to 1, and needs to be re-set to 1 if you want to parse anything again with getopts
+
+OPTARG	This variable is set to any argument for an option found by getopts. It also contains the option flag of an unknown option.
+
+OPTERR	(Values 0 or 1) Indicates if Bash should display error messages generated by the getopts builtin. The value is initialized to 1 on every shell startup - so be sure to always set it to 0 if you don't want to see annoying messages! OPTERR is not specified by POSIX for the getopts builtin utility — only for the C getopt() function in unistd.h (opterr). OPTERR is bash-specific and not supported by shells such as ksh93, mksh, zsh, or dash.
+
+The base-syntax for getopts is:
+-------------------------------
+
+	getopts OPTSTRING VARNAME [ARGS...]
+
+where:
+
+	OPTSTRING	tells getopts which options to expect and where to expect arguments (see below)
+	VARNAME		tells getopts which shell-variable to use for option reporting
+	ARGS		tells getopts to parse these optional words instead of the positional parameters
+
+
+The option-string:
+------------------
+The option-string tells getopts which options to expect and which of them must have an argument. 
+The syntax is very simple — every option character is simply named as is, this example-string would tell getopts to look for -f, -A and -x:
+
+	getopts fAx VARNAME
+
+When you want getopts to expect an argument for an option, just place a : (colon) after the proper option flag. 
+If you want -A to expect an argument (i.e. to become -A SOMETHING) just do:
+
+	getopts fA:x VARNAME
+
+If the very first character of the option-string is a : (colon), which would normally be nonsense because there's no option letter preceding it, 
+getopts switches to "silent error reporting mode". In productive scripts, this is usually what you want because it allows you to handle errors yourself without being disturbed by annoying messages.
+
+
+Error Reporting
+---------------
+
+Regarding error-reporting, there are two modes getopts can run in:
+
+1) verbose mode
+2) silent mode
+
+For productive scripts I recommend to use the silent mode, since everything looks more professional, 
+when you don't see annoying standard messages. Also it's easier to handle, since the failure cases are indicated in an easier way.
+
+Verbose Mode:
+
+invalid option			VARNAME is set to ? (question-mark) and OPTARG is unset
+required argument not found	VARNAME is set to ? (question-mark), OPTARG is unset and an error message is printed
+
+
+Silent Mode:
+
+invalid option			VARNAME is set to ? (question-mark) and OPTARG is set to the (invalid) option character
+required argument not found	VARNAME is set to : (colon) and OPTARG contains the option-character in question
+
+
+Example
+-------
+
+	#!/bin/bash
+
+	while getopts ":a" option;
+	do
+	   case $option in
+	      a)
+		 echo "-a was triggered";;
+	      \?)
+		 echo "Invalid option given: -$OPTARG";;
+	   esac
+	done
+
+Output
+------
+
+Calling it without arguments:
+-----------------------------
+
+	[prabhu@localhost learn_shellscripting]$ ./getopts.sh 
+	[prabhu@localhost learn_shellscripting]$ 
+
+Nothing happened? Right. getopts didn't see any valid or invalid options (letters preceded by a dash), so it wasn't triggered.
+
+
+Calling it with non-option arguments:
+-------------------------------------
+
+	[prabhu@localhost learn_shellscripting]$ ./getopts.sh /etc/passwd
+	[prabhu@localhost learn_shellscripting]$
+
+Again — nothing happened. The very same case: getopts didn't see any valid or invalid options (letters preceded by a dash), 
+so it wasn't triggered.
+The arguments given to your script are of course accessible as $1 - ${N}.
+
+
+Calling it with option-arguments:
+---------------------------------
+
+Now let's trigger getopts: Provide options.
+First, an invalid one:
+
+	[prabhu@localhost learn_shellscripting]$ ./getopts.sh -i
+	Invalid option given: -i
+
+As expected, getopts didn't accept this option and acted like told above: It placed ? into $option and the 
+invalid option character (i) into $OPTARG. With our case statement, we were able to detect this.
+
+Now, a valid one (-a):
+
+	[prabhu@localhost learn_shellscripting]$ ./getopts.sh -a
+	-a was triggered
+
+You see, the detection works perfectly. The a was put into the variable $opt for our case statement.
+
+
+Of course it's possible to mix valid and invalid options when calling:
+
+	[prabhu@localhost learn_shellscripting]$ ./getopts.sh -a -b -c -d
+	-a was triggered
+	Invalid option given: -b
+	Invalid option given: -c
+	Invalid option given: -d
+
+Finally, it's of course possible, to give our option multiple times:
+
+	[prabhu@localhost learn_shellscripting]$ ./getopts.sh -a -a -a -a -a
+	-a was triggered
+	-a was triggered
+	-a was triggered
+	-a was triggered
+	-a was triggered
+
+The last examples lead us to some points you may consider:
+	invalid options don't stop the processing: If you want to stop the script, you have to do it yourself (exit in the right place)
+	multiple identical options are possible: If you want to disallow these, you have to check manually (e.g. by setting a variable or so)
+
+
+An option with argument
+-----------------------
+-----------------------
+
+In next example, we can see a program which has an option with argument.
+
+Let's extend our example from above. Just a little bit:
+
+	-a now takes an argument
+	on an error, the parsing exits with exit 1
+
+	#!/bin/bash
+	   
+	while getopts ":a:" option
+	do       
+	   case $option in
+	     a)
+		echo "-a option was triggered. Argument is $OPTARG"
+		;;
+	     \?) 
+		echo "Invalid option: -$OPTARG"
+		exit 1
+		;;
+	     :)
+		echo "Option - $OPTARG requires an argument"
+		exit 1
+		;;
+	   esac
+	done
+
+Output:
+-------
+-------
+
+Calling it without any arguments:
+
+	[prabhu@localhost learn_shellscripting]$ ./getopts_arguments.sh
+	[prabhu@localhost learn_shellscripting]$ 
+
+Calling it with non-option arguments:
+
+	[prabhu@localhost learn_shellscripting]$ ./getopts_arguments.sh /etc/passwd
+	[prabhu@localhost learn_shellscripting]$ 
+
+Calling it with option-arguments:
+Invalid option:
+
+	[prabhu@localhost learn_shellscripting]$ ./getopts_arguments.sh -i
+	Invalid option: -i
+
+Valid option, but without the mandatory argument:
+
+	[prabhu@localhost learn_shellscripting]$ ./getopts_arguments.sh -a
+	Option - a requires an argument
+
+Let's provide the argument:
+	[prabhu@localhost learn_shellscripting]$ ./getopts_arguments.sh -a /etc/password
+	-a option was triggered. Argument is /etc/password
+
+
+How to handle non-option arguments
+----------------------------------
+----------------------------------
+Example:
+
+	#!/bin/bash
+	   
+	while getopts ":a" option
+	do
+	   case $option in
+	   a)
+	      echo "option a is selected."
+	      ;;
+	   \?)
+	      echo "invalid option: -$OPTARG"
+	      exit 1
+	      ;;
+	   esac
+	done
+
+	shift $(($OPTIND - 1))
+	# $1 is now the first non-option argument, $2 the second, etc
+	# $@ and $* provides all the non-option arguments.
+	echo "Non-option arguments are $@"
+	echo "Non-option arguments are $*"
+
+Output:
+
+	[prabhu@localhost learn_shellscripting]$ ./getopts_non_option_arguments.sh -a asdf ads 
+	option a is selected.
+	Non-option arguments are asdf ads
+	Non-option arguments are asdf ads
+
+
+Arrays
+******
+******
+******
+Creating array:
+	arrayname=(value1 value2)
+        a=(1 2)
+
+Assigning value
+	arrayname[index]=value
+        a[2]=3
+
+Accessing array values
+	echo ${arrayname[index]}
+        echo ${a[2]}
+
+        Example:
+	sh-4.2$ a=(0 1)
+	sh-4.2$ echo ${a[0]}
+	0
+	sh-4.2$ echo ${a[1]}
+	1
+
+You can access all the items in an array in one of the following ways −
+	${array_name[*]}
+	${array_name[@]}
+
+	Example:
+	sh-4.2$ echo ${a[*]}
+	0 1	
+
+	sh-4.2$ echo ${a[@]}
+	0 1
+
+Arithmetic Evaluation (Command):
+********************************
+********************************
+	Syntax:
+	(( <EXPRESSION> ))
+
+This command evaluates the arithmetic expression <EXPRESSION>.
+
+If the expression evaluates to 0 then the exit code of the expression is set to 1 (FALSE). If the expression evaluates to something else than 0, then the exit code of the expression is set to 0 (TRUE). For this return code mapping, please see this section.
+
+The functionality basically is equivalent to what the ''let'' builtin command does. 
+The arithmetic evaluation compound command should be preferred.
+
+
+Let
+***
+***
+	Syntax:
+	let arg [arg ...]
+
+The let builtin command evaluates each supplied word from left to right as an arithmetic expression and 
+returns an exit code according to the truth value of the rightmost expression.
+
+
+fold:
+****
+****
+fold wraps each line of input text to fit a specified line width.
+
+	sh-4.2$ echo $a | fold -w1
+	h
+	e
+	l
+	l
+	o
+
+	sh-4.2$ echo $a | fold -w2
+	he
+	ll
+	o
+	sh-4.2$ 
+
+
+Finding the length of a string:
+------------------------------
+sh-4.2$ a="hello string"
+sh-4.2$ echo ${#a}
+12
+
+
+Start from Chapter 14:
+---------------------
+http://steve-parker.org/sh/hints.shtml
+http://www.tutorialspoint.com/unix/unix-basic-operators.htm
+
+

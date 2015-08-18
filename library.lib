@@ -1,0 +1,11 @@
+#library.lib
+#Note no #!/bin/sh as this should not spawn an extra shell.
+
+VARIABLE_1="hello"
+
+function_1()
+{
+   echo "First argument is $1"
+   echo "Second argument is $2"
+}
+
